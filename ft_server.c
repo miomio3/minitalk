@@ -72,16 +72,16 @@ int	main(void)
 	p = 0;
 	while(i < 4096)
 	{
-		pause();
 		p = p * 2;
 		signal(SIGUSR1, signal_handle);
 		printf("%d\n", g_signal);
+		fflush(stdout);
 		signal(SIGUSR2, signal_handle);
-		printf("%d\n", g_signal);
 		if(g_signal == SIGUSR2)
 			p = p + 1;
 		printf("%d", p);
 		i++;
+		pause();
 	}
 	return(0);
 }
