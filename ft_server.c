@@ -9,14 +9,20 @@
 #define BUFF_SIZE	7
 #define ERROR		-1
 
-static void	signal_handle(int signal);
+static void	signal_handle(int signal, siginfo_t *info_c, void *ucontext);
 size_t		ft_strlen(char *s);
 static void	ft_putstr(char *s);
 char		*ft_itoa(int pid);
-void		ft_bzero(char *buf, size_t len);
-int	ft_atoi_plus(char *argv);
+void		ft_bzero(void *buf, size_t len);
+int			ft_atoi_plus(char *argv);
 
-int	g_signal;
+typedef struct g_siginfo
+{
+	int			g_signal;
+	siginfo_t	g_siginfot;
+}g_siginfo;
+
+g_siginfo info;
 
 static void	ft_putstr(char *s)
 {
@@ -26,33 +32,29 @@ static void	ft_putstr(char *s)
 
 static void	receive(void)
 {
+	struct sigaction	act;
+
+	ft_bzero(&act, sizeof(act));
+	sigemptyset(&act.sa_mask);
+	act.sa_flags = SA_SIGINFO;
+	act.sa_sigaction = *signal_handle;
+	info.g_signal = 0;
 	while(1)
 	{
-		signal(SIGUSR1, signal_handle);
-		signal(SIGUSR2, signal_handle);
-		if(g_signal == SIGUSR1 || g_signal == SIGUSR2)
+		sigaction(SIGUSR1, &act, NULL);
+		sigaction(SIGUSR2, &act, NULL);
+		if(info.g_signal == SIGUSR1 || info.g_signal == SIGUSR2)
 			break;
 		pause();
 	}
 }
 
-static void	signal_handle(int signal)
+static void	signal_handle(int signal, siginfo_t *info_c, void *ucontext)
 {
-	g_signal = signal;
-}
-
-static int read_pid(void)
-{
-	int		fd;
-	char	buf[BUFF_SIZE + 1];
-
-	fd = open("signal.txt", O_RDONLY);
-	if(fd == -1)
-		return(ERROR);
-	ft_bzero(buf, BUFF_SIZE + 1);
-	read(fd, buf, BUFF_SIZE);
-	ft_putstr(buf);
-	return(ft_atoi_plus(buf));
+	info.g_signal = signal;
+	info.g_siginfot = *info_c;
+	if(ucontext == NULL)
+		return;
 }
 
 int	main(void)
@@ -65,14 +67,14 @@ int	main(void)
 		return(ERROR);
 	ft_putstr(pid_char);
 	free(pid_char);
-	g_signal = 0;
 	receive();
-	if(g_signal != SIGUSR1)
+	if(info.g_signal != SIGUSR1)
 		return(ERROR);
-	pid_c = read_pid();
-	if(pid_c == ERROR)
+	pid_c = info.g_siginfot.si_pid;
+	while(1)
+	/* if(pid_c == ERROR)
 		return(ERROR);
 	if(kill(pid_c, SIGUSR1) == -1)
-		return(ERROR);
+		return(ERROR); */
 	return(0);
 }

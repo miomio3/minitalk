@@ -42,14 +42,16 @@ char	*ft_itoa(int pid)
 	return (pid_char);
 }
 
-void	ft_bzero(char *buf, size_t len)
+void	ft_bzero(void *buf, size_t len)
 {
-	size_t	i;
+	size_t			i;
+	unsigned char	*p;
 
+	p = (unsigned char *)buf;
 	i = 0;
 	while(i < len)
 	{
-		buf[i] = 0;
+		p[i] = 0;
 		i++;
 	}
 }

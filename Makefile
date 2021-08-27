@@ -6,8 +6,10 @@ SRC = *.c
 all		:$(NAME)
 %.out	:%.c
 	$(CC) $(FLUG) $< share.c -o $@
+clean	:
+	rm -f $(NAME)
 fclean	:
 	rm -f $(NAME)
-re		:fclean all
+re		:fclean clean all
 
 .PHONY		:all clean fclean re
