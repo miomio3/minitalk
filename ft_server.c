@@ -70,7 +70,7 @@ static unsigned	char receive_char(pid_t pid_c)
 	while(i < BIT_SIZE)
 	{
 		info.g_signal = 0;
-		usleep(100);
+		usleep(10);
 		kill(pid_c, SIGUSR1);//1回目送信
 		while(1)
 		{

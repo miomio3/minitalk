@@ -47,12 +47,12 @@ static int	send_char(pid_t pid_s, char *s)
 	{
 		uc = (unsigned char)s[si];
 		i = 0;
-		usleep(100);
 		while(i < BUFF_SIZE + 1)
 		{
 			bit = (uc >> i++) & 1;
 			printf("%d\n", bit);
 			fflush(stdout);//debug
+			usleep(100);
 			if(kill(pid_s, SIGUSR1 + bit) == -1)
 				return(ERROR);
 			if(i == BUFF_SIZE + 1)
