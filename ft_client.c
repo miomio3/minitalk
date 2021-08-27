@@ -1,47 +1,70 @@
 #include <unistd.h>
 #include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <signal.h>
 
-int	ft_atoi_plus(char *argv)
-{
-	int	i;
-	int	j;
-	int	a;
+#define BUFF_SIZE	7
+#define ERROR		-1
 
-	i = 0;
-	a = 0;
-	while(argv[i])
-		i++;
-	j = 0;
-	while(j < i)
+int	ft_atoi_plus(char *argv);
+static void	signal_handle(int signal);
+size_t	ft_strlen(char *s);
+char	*ft_itoa(int pid);
+
+int	g_signal;
+
+static void	signal_handle(int signal)
+{
+	g_signal = signal;
+}
+
+static void	receive(void)
+{
+	while(1)
 	{
-		a = a * 10;
-		a = a + argv[j] - '0';
-		j++;
+		signal(SIGUSR1, signal_handle);
+		signal(SIGUSR2, signal_handle);
+		if(g_signal == SIGUSR1 || g_signal == SIGUSR2)
+			break;
+		pause();
 	}
-	return (a);
+}
+
+static int	write_pid(void)
+{
+	int		fd;
+	char	*pid_char;
+
+	fd = open("signal.txt", O_WRONLY);
+	if(fd == -1)
+		return(ERROR);
+	pid_char = ft_itoa(getpid());
+	write(fd, pid_char, ft_strlen(pid_char));
+	return(0);
 }
 
 int	main(int argc, char *argv[])
 {
-	short 	p;
-	//int		i;
+	int		pid_s;
 
-	p = '1';
-	int	pid = ft_atoi_plus(argv[1]);
-	if(argc > 2)
+	if(argc != 2)
 		return(-1);
-	/* while(i < 4096)
+	pid_s = ft_atoi_plus(argv[1]);
+	if(pid_s == ERROR)
 	{
-		if(p % 2 == 0) */
-			printf("%d\n", kill(pid, SIGUSR1));
-
-		/* else if(p % 2 == 1) */
-			
-		/* p = p / 2;
-		i++; */
-	
+		kill(pid_s, SIGUSR2);
+		return(ERROR);
+	}
+	if(write_pid() == ERROR)
+		return(ERROR);
+	if(kill(pid_s, SIGUSR1) == -1)
+		return(ERROR);
+	receive();
+	if(g_signal != SIGUSR1)
+		return(ERROR);
+	printf("g_signal = %d", g_signal);//debug
 	return(0);
 }

@@ -5,7 +5,7 @@ SRC = *.c
 
 all		:$(NAME)
 %.out	:%.c
-	$(CC) $(FLUG) $< -o $@
+	$(CC) $(FLUG) $< share.c -o $@
 fclean	:
 	rm -f $(NAME)
 re		:fclean all
