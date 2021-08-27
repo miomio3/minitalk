@@ -47,13 +47,16 @@ static int	send_char(pid_t pid_s, char *s)
 	{
 		uc = (unsigned char)s[si];
 		i = 0;
-		while(i < BIT_SIZE)
+		usleep(100);
+		while(i < BUFF_SIZE + 1)
 		{
 			bit = (uc >> i++) & 1;
 			printf("%d\n", bit);
 			fflush(stdout);//debug
 			if(kill(pid_s, SIGUSR1 + bit) == -1)
 				return(ERROR);
+			if(i == BUFF_SIZE + 1)
+				break;
 			receive();
 		}
 		if(s[si] == '\0')
@@ -66,7 +69,6 @@ static int	send_char(pid_t pid_s, char *s)
 int	main(int argc, char *argv[])
 {
 	int		pid_s;
-	size_t	i;
 
 	if(argc != 3)
 		return(-1);
@@ -81,7 +83,6 @@ int	main(int argc, char *argv[])
 	receive();//1回目受信
 	if(g_signal != SIGUSR1)
 		return(ERROR);
-	i = 0;
 	send_char(pid_s, argv[2]);
 	return(0);
 }

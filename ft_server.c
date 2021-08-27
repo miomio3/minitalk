@@ -66,10 +66,11 @@ static unsigned	char receive_char(pid_t pid_c)
 	int				bit;
 
 	i = 0;
+	c = 0;
 	while(i < BIT_SIZE)
 	{
 		info.g_signal = 0;
-		usleep(10);
+		usleep(100);
 		kill(pid_c, SIGUSR1);//1回目送信
 		while(1)
 		{
@@ -92,20 +93,29 @@ int	main(void)
 	int		pid_c;
 	char	c;
 
+	
 	pid_char = ft_itoa(getpid());
 	if(pid_char == NULL)
 		return(ERROR);
 	ft_putstr(pid_char);
 	free(pid_char);
-	receive();//1回目受信
-	if(info.g_signal != SIGUSR1)
-		return(ERROR);
-	pid_c = info.g_siginfot.si_pid;
-	c = '1';
-	while(c)
+	while(1)
 	{
-		c = receive_char(pid_c);
-		write(1, &c, 1);
+		receive();//1回目受信
+		if(info.g_signal != SIGUSR1)
+			return(ERROR);
+		pid_c = info.g_siginfot.si_pid;
+		c = '1';
+		while(1)
+		{
+			c = receive_char(pid_c);
+			write(1, &c, 1);
+			if(c == '\0')
+			{
+				write(1, "\n", 1);
+				break;
+			}
+		}
 	}
 	return(0);
 }
