@@ -8,6 +8,7 @@
 
 #define BUFF_SIZE	7
 #define ERROR		-1
+#define BIT_SIZE	8
 
 int			ft_atoi_plus(char *argv);
 static void	signal_handle(int signal);
@@ -32,40 +33,32 @@ static void	receive(void)
 			break;
 		pause();
 	}
-	printf("receive\n");
 }
 
-static int	write_pid(void)
-{
-	int		fd;
-	char	*pid_char;
-
-	fd = open("signal.txt", O_WRONLY);
-	if(fd == -1)
-		return(ERROR);
-	pid_char = ft_itoa(getpid());
-	write(fd, pid_char, ft_strlen(pid_char));
-	return(0);
-}
-
-static int	send_char(pid_t pid_s, char c)
+static int	send_char(pid_t pid_s, char *s)
 {
 	unsigned char	uc;
 	size_t			i;
 	int				bit;
+	int				si;
 
-	uc = (unsigned char)c;
-	i = 0;
-	printf("char_bit\n");
-	while(i < 8)
+	si = 0;
+	while(1)
 	{
-		bit = (uc >> i) & 1;
-		printf("%d\n", bit);
-		fflush(stdout);//debug
-		if(kill(pid_s, SIGUSR1 + bit) == -1)
-			return(ERROR);
-		receive();
-		i++;
+		uc = (unsigned char)s[si];
+		i = 0;
+		while(i < BIT_SIZE)
+		{
+			bit = (uc >> i++) & 1;
+			printf("%d\n", bit);
+			fflush(stdout);//debug
+			if(kill(pid_s, SIGUSR1 + bit) == -1)
+				return(ERROR);
+			receive();
+		}
+		if(s[si] == '\0')
+			break;
+		si++;
 	}
 	return(0);
 }
@@ -73,8 +66,9 @@ static int	send_char(pid_t pid_s, char c)
 int	main(int argc, char *argv[])
 {
 	int		pid_s;
+	size_t	i;
 
-	if(argc != 2)
+	if(argc != 3)
 		return(-1);
 	pid_s = ft_atoi_plus(argv[1]);
 	if(pid_s == ERROR)
@@ -82,13 +76,12 @@ int	main(int argc, char *argv[])
 		kill(pid_s, SIGUSR2);
 		return(ERROR);
 	}
-	if(write_pid() == ERROR)
-		return(ERROR);
-	if(kill(pid_s, SIGUSR1) == -1)//一回目送信
+	if(kill(pid_s, SIGUSR1) == -1)//1回目送信
 		return(ERROR);
 	receive();//1回目受信
 	if(g_signal != SIGUSR1)
 		return(ERROR);
-	send_char(pid_s, '1');
+	i = 0;
+	send_char(pid_s, argv[2]);
 	return(0);
 }
