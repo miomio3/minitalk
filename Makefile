@@ -4,8 +4,8 @@ FLUG = -Wall -Wextra -Werror
 SRC = *.c
 
 all		:$(NAME)
-%.out	:%.c
-	$(CC) $(FLUG) $< share.c -o $@
+%.out	:%.c share.c share2.c
+	$(CC) $(FLUG) $< share.c share2.c -o $@
 clean	:
 	rm -f $(NAME)
 fclean	:

@@ -6,14 +6,15 @@
 #include <stdio.h>
 #include <signal.h>
 
-#define BUFF_SIZE	7
+#define BUFF_SIZE	100
 #define ERROR		-1
 #define BIT_SIZE	8
 
-int			ft_atoi_plus(char *argv);
-static void	signal_handle(int signal);
-size_t		ft_strlen(char *s);
-char		*ft_itoa(int pid);
+int						ft_atoi_plus(char *argv);
+static void				signal_handle(int signal);
+size_t					ft_strlen(char *s);
+char					*ft_itoa(int pid);
+unsigned char			receive_char(pid_t pid_c);
 
 int	g_signal;
 
@@ -47,15 +48,16 @@ static int	send_char(pid_t pid_s, char *s)
 	{
 		uc = (unsigned char)s[si];
 		i = 0;
-		while(i < BUFF_SIZE + 1)
+		if(si % BUFF_SIZE == 0 && si != 0)
+			receive();
+		usleep(30);
+		while(i < BIT_SIZE)
 		{
 			bit = (uc >> i++) & 1;
-			printf("%d\n", bit);
-			fflush(stdout);//debug
-			usleep(100);
+			usleep(50);
 			if(kill(pid_s, SIGUSR1 + bit) == -1)
 				return(ERROR);
-			if(i == BUFF_SIZE + 1)
+			if(i == BIT_SIZE)
 				break;
 			receive();
 		}

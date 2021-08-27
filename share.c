@@ -82,5 +82,4 @@ int	ft_atoi_plus(char *argv)
 void	ft_putstr(char *s)
 {
 	write(1, s, ft_strlen(s));
-	write(1, "\n", 1);
 }

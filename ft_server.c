@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <signal.h>
 
-#define BUFF_SIZE	7
+#define BUFF_SIZE	100
 #define ERROR		-1
 #define BIT_SIZE	8
 
@@ -16,13 +16,18 @@ void					ft_putstr(char *s);
 char					*ft_itoa(int pid);
 void					ft_bzero(void *buf, size_t len);
 int						ft_atoi_plus(char *argv);
-static unsigned char	receive_char(pid_t pid_c);
-static void	easy_signal_handle(int signal);
+unsigned char			receive_char(pid_t pid_c);
+static void				easy_signal_handle(int signal);
+void					ft_putstr2(char *buf, int pid_c, size_t i);
+void					putpid(void);
+void					receive_one(char buf[BUFF_SIZE + 1], int pid_c);
+void					short_len(int pid_c);
 
 typedef struct g_siginfo
 {
 	int			g_signal;
 	siginfo_t	g_siginfot;
+	char		buf[BUFF_SIZE + 1];
 }g_siginfo;
 
 g_siginfo info;
@@ -54,12 +59,12 @@ static void	signal_handle(int signal, siginfo_t *info_c, void *ucontext)
 		return;
 }
 
-static void	easy_signal_handle(int signal)
+void	easy_signal_handle(int signal)
 {
 	info.g_signal = signal;
 }
 
-static unsigned	char receive_char(pid_t pid_c)
+unsigned	char receive_char(pid_t pid_c)
 {
 	size_t			i;
 	unsigned char	c;
@@ -70,8 +75,7 @@ static unsigned	char receive_char(pid_t pid_c)
 	while(i < BIT_SIZE)
 	{
 		info.g_signal = 0;
-		usleep(10);
-		kill(pid_c, SIGUSR1);//1回目送信
+		short_len(pid_c);//1回目送信
 		while(1)
 		{
 			signal(SIGUSR1, easy_signal_handle);
@@ -80,41 +84,38 @@ static unsigned	char receive_char(pid_t pid_c)
 				break;
 			pause();
 		}
-		bit = (info.g_signal - SIGUSR1) << i;
+		bit = (info.g_signal - SIGUSR1) << i++;
 		c = c + bit;
-		i++;
 	}
 	return(c);
 }
 
 int	main(void)
 {
-	char 	*pid_char;
-	int		pid_c;
-	char	c;
-
+	int				pid_c;
+	size_t			i;
+	unsigned char	c;
 	
-	pid_char = ft_itoa(getpid());
-	if(pid_char == NULL)
-		return(ERROR);
-	ft_putstr(pid_char);
-	free(pid_char);
+	putpid();
+	ft_bzero(info.buf, BUFF_SIZE + 1);
 	while(1)
 	{
 		receive();//1回目受信
 		if(info.g_signal != SIGUSR1)
 			return(ERROR);
 		pid_c = info.g_siginfot.si_pid;
-		c = '1';
+		i = 0;
 		while(1)
 		{
 			c = receive_char(pid_c);
-			write(1, &c, 1);
+			info.buf[i++] = c;
 			if(c == '\0')
 			{
+				ft_putstr(info.buf);
 				write(1, "\n", 1);
 				break;
 			}
+			ft_putstr2(info.buf, pid_c, i);
 		}
 	}
 	return(0);
