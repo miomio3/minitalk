@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <limits.h>
+#include <unistd.h>
 
 #define ERROR	-1
 
@@ -76,4 +77,10 @@ int	ft_atoi_plus(char *argv)
 		j++;
 	}
 	return(a);
+}
+
+void	ft_putstr(char *s)
+{
+	write(1, s, ft_strlen(s));
+	write(1, "\n", 1);
 }

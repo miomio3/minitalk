@@ -9,10 +9,10 @@
 #define BUFF_SIZE	7
 #define ERROR		-1
 
-int	ft_atoi_plus(char *argv);
+int			ft_atoi_plus(char *argv);
 static void	signal_handle(int signal);
-size_t	ft_strlen(char *s);
-char	*ft_itoa(int pid);
+size_t		ft_strlen(char *s);
+char		*ft_itoa(int pid);
 
 int	g_signal;
 
@@ -23,6 +23,7 @@ static void	signal_handle(int signal)
 
 static void	receive(void)
 {
+	g_signal = 0;
 	while(1)
 	{
 		signal(SIGUSR1, signal_handle);
@@ -31,6 +32,7 @@ static void	receive(void)
 			break;
 		pause();
 	}
+	printf("receive\n");
 }
 
 static int	write_pid(void)
@@ -43,6 +45,28 @@ static int	write_pid(void)
 		return(ERROR);
 	pid_char = ft_itoa(getpid());
 	write(fd, pid_char, ft_strlen(pid_char));
+	return(0);
+}
+
+static int	send_char(pid_t pid_s, char c)
+{
+	unsigned char	uc;
+	size_t			i;
+	int				bit;
+
+	uc = (unsigned char)c;
+	i = 0;
+	printf("char_bit\n");
+	while(i < 8)
+	{
+		bit = (uc >> i) & 1;
+		printf("%d\n", bit);
+		fflush(stdout);//debug
+		if(kill(pid_s, SIGUSR1 + bit) == -1)
+			return(ERROR);
+		receive();
+		i++;
+	}
 	return(0);
 }
 
@@ -60,11 +84,11 @@ int	main(int argc, char *argv[])
 	}
 	if(write_pid() == ERROR)
 		return(ERROR);
-	if(kill(pid_s, SIGUSR1) == -1)
+	if(kill(pid_s, SIGUSR1) == -1)//一回目送信
 		return(ERROR);
-	receive();
+	receive();//1回目受信
 	if(g_signal != SIGUSR1)
 		return(ERROR);
-	printf("g_signal = %d", g_signal);//debug
+	send_char(pid_s, '1');
 	return(0);
 }

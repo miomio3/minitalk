@@ -11,10 +11,12 @@
 
 static void	signal_handle(int signal, siginfo_t *info_c, void *ucontext);
 size_t		ft_strlen(char *s);
-static void	ft_putstr(char *s);
+void		ft_putstr(char *s);
 char		*ft_itoa(int pid);
 void		ft_bzero(void *buf, size_t len);
 int			ft_atoi_plus(char *argv);
+static void	receive_char(pid_t pid_c);
+static void	easy_signal_handle(int signal);
 
 typedef struct g_siginfo
 {
@@ -23,12 +25,6 @@ typedef struct g_siginfo
 }g_siginfo;
 
 g_siginfo info;
-
-static void	ft_putstr(char *s)
-{
-	write(1, s, ft_strlen(s));
-	write(1, "\n", 1);
-}
 
 static void	receive(void)
 {
@@ -57,6 +53,37 @@ static void	signal_handle(int signal, siginfo_t *info_c, void *ucontext)
 		return;
 }
 
+static void	easy_signal_handle(int signal)
+{
+	info.g_signal = signal;
+}
+
+static void	receive_char(pid_t pid_c)
+{
+	size_t			i;
+	//unsigned char	c;
+
+	i = 0;
+	printf("char_bit\n");
+	fflush(stdout);
+	while(i < 8)
+	{
+		info.g_signal = 0;
+		while(1)
+		{
+			signal(SIGUSR1, easy_signal_handle);
+			signal(SIGUSR2, easy_signal_handle);
+			if(info.g_signal == SIGUSR1 || info.g_signal == SIGUSR2)
+				break;
+			pause();
+		}
+		printf("g_signal = %d\n", info.g_signal);
+		fflush(stdout);
+		kill(pid_c, SIGUSR1);
+		i++;
+	}
+}
+
 int	main(void)
 {
 	char 	*pid_char;
@@ -67,14 +94,13 @@ int	main(void)
 		return(ERROR);
 	ft_putstr(pid_char);
 	free(pid_char);
-	receive();
+	receive();//1回目受信
+	printf("first-receiveOK\n");
 	if(info.g_signal != SIGUSR1)
 		return(ERROR);
 	pid_c = info.g_siginfot.si_pid;
-	while(1)
-	/* if(pid_c == ERROR)
+	if(kill(pid_c, SIGUSR1) == -1)//1回目送信
 		return(ERROR);
-	if(kill(pid_c, SIGUSR1) == -1)
-		return(ERROR); */
+	receive_char(pid_c);
 	return(0);
 }
