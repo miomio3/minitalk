@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <signal.h>
 
-#define BUFF_SIZE	100
+#define BUFF_SIZE	1000
 #define ERROR		-1
 #define BIT_SIZE	8
 
@@ -18,7 +18,7 @@ void					ft_bzero(void *buf, size_t len);
 int						ft_atoi_plus(char *argv);
 unsigned char			receive_char(pid_t pid_c);
 static void				easy_signal_handle(int signal);
-void					ft_putstr2(char *buf, int pid_c, size_t i);
+void					ft_putstr2(char *buf, int pid_c);
 void					putpid(void);
 void					receive_one(char buf[BUFF_SIZE + 1], int pid_c);
 void					short_len(int pid_c);
@@ -115,7 +115,11 @@ int	main(void)
 				write(1, "\n", 1);
 				break;
 			}
-			ft_putstr2(info.buf, pid_c, i);
+			if(i == BUFF_SIZE)
+			{
+				ft_putstr2(info.buf, pid_c);
+				i = 0;
+			}
 		}
 	}
 	return(0);

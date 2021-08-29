@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <stdio.h>
 
-#define BUFF_SIZE	100
+#define BUFF_SIZE	1000
 #define ERROR		-1
 
 void				ft_bzero(void *buf, size_t len);
@@ -14,14 +14,11 @@ unsigned	char	receive_char(pid_t pid_c);
 void				easy_signal_handle(int signal);
 unsigned char		receive_char(pid_t pid_c);
 
-void	ft_putstr2(char *buf, int pid_c, size_t i)
+void	ft_putstr2(char *buf, int pid_c)
 {
-	if(i + 1 % BUFF_SIZE == 0 && i != 1)
-	{
-		ft_putstr(buf);
-		ft_bzero(buf, BUFF_SIZE);
-		kill(pid_c, SIGUSR1);
-	}
+	ft_putstr(buf);
+	ft_bzero(buf, BUFF_SIZE);
+	kill(pid_c, SIGUSR1);
 }
 
 void	putpid(void)

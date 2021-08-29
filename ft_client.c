@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <signal.h>
 
-#define BUFF_SIZE	100
+#define BUFF_SIZE	1000
 #define ERROR		-1
 #define BIT_SIZE	8
 
@@ -48,13 +48,16 @@ static int	send_char(pid_t pid_s, char *s)
 	{
 		uc = (unsigned char)s[si];
 		i = 0;
-		if(si % BUFF_SIZE == 0 && si != 0)
+		if(si == BUFF_SIZE + 1)
+		{
 			receive();
-		usleep(30);
+			usleep(50);
+		}
+		usleep(100);
 		while(i < BIT_SIZE)
 		{
 			bit = (uc >> i++) & 1;
-			usleep(50);
+			usleep(20);
 			if(kill(pid_s, SIGUSR1 + bit) == -1)
 				return(ERROR);
 			if(i == BIT_SIZE)
